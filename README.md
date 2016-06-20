@@ -1,1 +1,1 @@
-This project has the purpose to explain what the POO in the JavaScript in plain language.
+This project has the purpose to explain the POO in the JavaScript in plain language.
