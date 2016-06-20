@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Добавить свойство</title>
+</head>
+<body>
+    <p>Выберите свойство, которое хотите добавить</p>
+    <label>Резиновый
+        <input type="checkbox" ng-model="objectMethod.rubber">
+    </label><br/>
+    <label>Цвет
+        <input type="checkbox">
+        <input type="text" ng-model="objectMethod.color">
+    </label>
+    <label>Вес
+        <input type="checkbox">
+        <input type="text" ng-model="objectMethod.weight">
+    </label>
+    {{objectMethod.color}}
+
+</body>
+</html>
