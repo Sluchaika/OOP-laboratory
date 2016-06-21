@@ -1,22 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html   lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Добавить свойство</title>
 </head>
 <body>
-    <p>Выберите свойство, которое хотите добавить</p>
-    <label>Резиновый
-        <input type="checkbox" ng-model="objectMethod.rubber">
-    </label><br/>
-    <label>Цвет
-        <input type="checkbox">
-        <input type="text" ng-model="objectMethod.color">
-    </label>
-    <label>Вес
-        <input type="checkbox">
-        <input type="text" ng-model="objectMethod.weight">
-    </label>
+    <div  ng-hide="close" ng-controller="SelectProperty as SelectProperty" class="selection-list">
+        <p>Выберите свойство, которое хотите добавить</p>
+        <label class="selection-list__item">Материал
+            <input type="checkbox" ng-model="checkMaterial">
+            <input type="text" ng-show="checkMaterial" ng-model="objectProperty.material">
+        </label>
+        <label class="selection-list__item">Цвет
+            <input type="checkbox" ng-model="checkColor">
+            <input type="text" ng-show="checkColor" ng-model="objectProperty.color">
+        </label>
+        <label class="selection-list__item">Вес
+            <input type="checkbox" ng-model="checkWeight">
+            <input type="text" ng-show="checkWeight" ng-model="objectProperty.weight">
+        </label>
+        <button ng-click="SelectProperty.saveProperties(objectProperty)">Ок</button>
+    </div>
     {{objectMethod.color}}
 
 </body>
