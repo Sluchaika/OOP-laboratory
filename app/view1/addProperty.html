@@ -5,23 +5,26 @@
     <title>Добавить свойство</title>
 </head>
 <body>
-    <div  ng-hide="close" ng-controller="SelectProperty as SelectProperty" class="selection-list">
+<!-- Показываем если есть значение.При клике на галочку показываем!-->
+    <div  ng-hide="close" ng-controller="propertiesCtrl as propertiesCtrl" class="selection-list">
         <p>Выберите свойство, которое хотите добавить</p>
         <label class="selection-list__item">Материал
-            <input type="checkbox" ng-model="checkMaterial">
-            <input type="text" ng-show="checkMaterial" ng-model="objectProperty.material">
+            <input type="text" ng-show="objProperty.material" ng-model="objProperty.material">
         </label>
         <label class="selection-list__item">Цвет
-            <input type="checkbox" ng-model="checkColor">
-            <input type="text" ng-show="checkColor" ng-model="objectProperty.color">
+            <input type="text" ng-show="objProperty.color" ng-model="objProperty.color">
         </label>
-        <label class="selection-list__item">Вес
-            <input type="checkbox" ng-model="checkWeight">
-            <input type="text" ng-show="checkWeight" ng-model="objectProperty.weight">
+       <!-- <label class="selection-list__item">Вес
+            <input type="text" ng-show="objProperty.weight" ng-model="objProperty.weight">
+        </label>-->
+        <label class="selection-list__item">Имя
+            <input type="checkbox"  ng-model="checkName">
+            <input type="text" ng-show="checkName" ng-model="objProperty.name">
         </label>
-        <button ng-click="SelectProperty.saveProperties(objectProperty)">Ок</button>
+        <label class="selection-list__item">Размер
+            <input type="text" ng-show="objProperty.size" ng-model="objProperty.size">
+        </label>
+        <button ng-click="propertiesCtrl.saveProperties(objProperty)">Ок</button>
     </div>
-    {{objectMethod.color}}
-
 </body>
 </html>

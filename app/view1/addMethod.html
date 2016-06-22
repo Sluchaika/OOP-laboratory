@@ -5,6 +5,18 @@
     <title>Добавить метод</title>
 </head>
 <body>
-
+    <div  ng-hide="close" ng-controller="methodsCtrl as methodsCtrl" class="selection-list">
+        <p>Выберите методы, которые хотите добавить</p>
+        <label class="selection-list__item">Летать
+            <input type="checkbox"  ng-model="objMethod.fly">
+        </label>
+        <label class="selection-list__item">Прыгать
+            <input type="checkbox"   ng-model="objMethod.jump">
+        </label>
+        <label class="selection-list__item">Плавать
+            <input type="checkbox" ng-model="objMethod.swim">
+        </label>
+        <button ng-click="methodsCtrl.saveMethods(objMethod)">Ок</button>
+    </div>
 </body>
 </html>
