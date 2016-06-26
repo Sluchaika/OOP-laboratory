@@ -9,7 +9,7 @@ angular.module('myApp.view1', ['ngRoute'])
     });
 }])
 
-.factory('defaultData', function(){
+/*.factory('defaultData', function(){
     var Ball = {
         color:'red'
     };
@@ -18,38 +18,38 @@ angular.module('myApp.view1', ['ngRoute'])
     return {
        Ball: Ball
     };
-})
+})*/
 
-.factory('codeService', ['defaultData', function(defaultData){
-    var code = '';
+.factory('codeService', [ function(){
 
-    function Ball () {
-        this.size = {
+
+    var Ball =  {
+        size: {
             id: 0, name: 'Размер', value: 100, check: true
-        };
-        this.color =  {
+        },
+        color: {
             id: 1, name: 'Цвет', value: 'red', check: true
-        };
-    }
+        }
+    };
 
+    function addProperties(){
+        //тут у некоторого объекта меняем свойства. Хотяяя оно э и так должно после кнопки созхраить
+        //прфи сменое родителя, должен меняться и ребенок
+    }
+    //var ball = new Ball();
 
     function createObj (parent) {
         console.log(parent);
-        return Object.create(parent);
-    }
-    function createNewObj (parent){
-        return object(parent);
+        var newObj =  Object.create(Ball);
+        //сюда передавать свойства
+        newObj.color.value = 'blue';
+        return newObj;
+
     }
 
 
-    function addProperties(props){
-        defaultData.Ball.prototype = props;
-      //  console.log(props);
-        code += 'Ball.prototype' + props;
-    }
 
     return {
-        addProperties: addProperties,
         objProperties: {
             size: {
                 id: 0, name: 'Размер', value: 100, check: true
@@ -64,22 +64,27 @@ angular.module('myApp.view1', ['ngRoute'])
                 id: 3, name: 'Цвет для тени', value: 'gray', check: true
             }
         },
-        createNewObj: {
-
-        },
         objMethods: {} ,
+        Ball: Ball,
         createObj : createObj
     };
 }])
 
 .factory('draw', function(){
-
+    var balls= {};
+    balls.x = 0;
+    balls.y = 700;
     return {
-        drawBall:  function(elem, option) {
+        drawBall:  function(elem, option, redrawing) {
             console.log('option');
             console.log(option);
             var ctx = elem[0].getContext('2d');
-            ctx.clearRect(0, 0, elem[0].width, elem[0].height);
+
+            if (redrawing){
+                console.log('redrawing');
+                ctx.clearRect(0, 0, elem[0].width, elem[0].height);
+            }
+
 
           /*  ctx.shadowOffsetX = 10;
             ctx.shadowOffsetY = 15;
@@ -94,7 +99,9 @@ angular.module('myApp.view1', ['ngRoute'])
             ctx.fillStyle = gr;*/
 
             ctx.beginPath();
-            ctx.arc(option.size.value, option.size.value, option.size.value / 2, 0, Math.PI * 2, false);
+            console.log(balls.x, balls.y);
+            ctx.arc(balls.x + option.size.value / 2 , balls.y, option.size.value / 2, 0, Math.PI * 2, false);
+            balls.x = option.size.value + 10;
             ctx.closePath();
 
             ctx.fillStyle = option.color.value;
@@ -102,23 +109,8 @@ angular.module('myApp.view1', ['ngRoute'])
         }
     };
 })
-.directive('checklistModel', function() {
-    return {
-        restrict : 'E',
-        require: 'ngModel',
-        link:function(scope, element, attrs, model) {
 
-            scope.toggle = function(){
-               // console.log('j'+element);
-                scope.check = !scope.ckeck;
-
-                model.$setViewValue(scope.isChecked);
-            };
-
-        }
-    };
-})
-.controller('propertiesCtrl', ['$scope', '$rootScope', 'codeService',  'defaultData', function($scope, $rootScope, codeService, defaultData) {
+.controller('propertiesCtrl', ['$scope', '$rootScope', 'codeService', function($scope, $rootScope, codeService) {
     $scope.props = codeService.objProperties;
 
 
@@ -137,17 +129,17 @@ angular.module('myApp.view1', ['ngRoute'])
             }
         }
        // console.log(selectedProps);
-        codeService.objProperties = selectedProps;
-        codeService.addProperties(selectedProps);
+        codeService.Ball = selectedProps;
+       // codeService.addProperties(selectedProps);
         $rootScope.properties = selectedProps;
 
     };
 
 }])
 
-.controller('methodsCtrl', ['$scope', '$rootScope', 'codeService', 'defaultData', function($scope, $rootScope, codeService, defaultData) {
+.controller('methodsCtrl', ['$scope', '$rootScope', 'codeService', function($scope, $rootScope, codeService) {
     this.saveMethods = function(selectedMethods){
-        codeService.objMethods= selectedMethods;
+        codeService.Ball = selectedMethods;
 
         $rootScope.changes = true;
     };
@@ -158,11 +150,12 @@ angular.module('myApp.view1', ['ngRoute'])
 .controller('drawCtrl', ['$scope', '$rootScope', '$element', 'codeService', 'draw', function($scope,  $rootScope, $element, codeService, draw){
     //тут проверяем существование того или иного метода и добавляем фукнционал. Проверяем свойства, перерисовываем шар.
     //нужно получить список свойсвт
-
+    var redrawing = true;
     $rootScope.$watch(
         'properties',
         function handleFooChange() {
-            draw.drawBall($element, codeService.objProperties);
+
+            draw.drawBall($element, codeService.Ball, redrawing);
         }
     );
 
@@ -171,7 +164,7 @@ angular.module('myApp.view1', ['ngRoute'])
         function handleFooChange() {
         console.log(7889);
             if ($rootScope.newInstance){
-                draw.drawBall($element, $rootScope.newInstance);
+                draw.drawBall($element, codeService.createObj(codeService.Ball));
             }
 
         }
