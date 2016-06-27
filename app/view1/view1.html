@@ -1,7 +1,8 @@
-<canvas width="800px" height="800px"ng-controller="drawCtrl as drawCtrl"></canvas>
+<canvas width="200px" height="200px"ng-controller="drawCtrl as drawCtrl"></canvas>
+<p id="canvasSpace"></p>
 <!--<aside ng-controller="WriteCode as WriteCode"><textarea ng-model="code"></textarea></aside>-->
 <div ng-controller="btnsCtrl as btnsCtrl">
     <button idialog="view1/addProperty.html">Добавить свойство</button>
     <button idialog="view1/addMethod.html">Добавить метод</button>
-    <button  ng-click="btnsCtrl.createInstance()">Создать экземпляр</button> <inpit type="text" ng-model="parentObj= 'Ball'">
+    <button  addcanvas ng-click="btnsCtrl.createInstance()">Создать экземпляр</button> <inpit type="text" ng-model="parentObj= 'Ball'"/>
 </div>

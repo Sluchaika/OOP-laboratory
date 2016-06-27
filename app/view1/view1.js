@@ -9,20 +9,7 @@ angular.module('myApp.view1', ['ngRoute'])
     });
 }])
 
-/*.factory('defaultData', function(){
-    var Ball = {
-        color:'red'
-    };
-
-
-    return {
-       Ball: Ball
-    };
-})*/
-
-.factory('codeService', [ function(){
-
-
+.factory('defaultData', function(){
     var Ball =  {
         size: {
             id: 0, name: 'Размер', value: 100, check: true
@@ -31,6 +18,15 @@ angular.module('myApp.view1', ['ngRoute'])
             id: 1, name: 'Цвет', value: 'red', check: true
         }
     };
+    return {
+        Ball : Ball
+    };
+})
+
+.factory('codeService', [ 'defaultData', function(defaultData){
+
+
+
 
     function addProperties(){
         //тут у некоторого объекта меняем свойства. Хотяяя оно э и так должно после кнопки созхраить
@@ -39,10 +35,10 @@ angular.module('myApp.view1', ['ngRoute'])
     //var ball = new Ball();
 
     function createObj (parent) {
-        console.log(parent);
-        var newObj =  Object.create(Ball);
+     /*   console.log('Ball=', Ball);*/
+        var newObj =  Object.create(defaultData.Ball);
         //сюда передавать свойства
-        newObj.color.value = 'blue';
+       // newObj.color.value = 'blue';
         return newObj;
 
     }
@@ -64,8 +60,7 @@ angular.module('myApp.view1', ['ngRoute'])
                 id: 3, name: 'Цвет для тени', value: 'gray', check: true
             }
         },
-        objMethods: {} ,
-        Ball: Ball,
+        objMethods: {},
         createObj : createObj
     };
 }])
@@ -73,7 +68,8 @@ angular.module('myApp.view1', ['ngRoute'])
 .factory('draw', function(){
     var balls= {};
     balls.x = 0;
-    balls.y = 700;
+    balls.y = 100;
+    balls.lastSize = 0;
     return {
         drawBall:  function(elem, option, redrawing) {
             console.log('option');
@@ -82,14 +78,17 @@ angular.module('myApp.view1', ['ngRoute'])
 
             if (redrawing){
                 console.log('redrawing');
-                ctx.clearRect(0, 0, elem[0].width, elem[0].height);
+                //сюда должны поступать координаты чисто прошлого. Можно их хранить
+
+                ctx.clearRect(0, 0, balls.lastSize, balls.lastSize);
+                balls.x = 0;
             }
 
-
-          /*  ctx.shadowOffsetX = 10;
-            ctx.shadowOffsetY = 15;
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = option.colorShadow && option.colorShadow.value;*/
+            balls.lastSize =  option.size.value;
+            /*  ctx.shadowOffsetX = 10;
+              ctx.shadowOffsetY = 15;
+              ctx.shadowBlur = 10;
+              ctx.shadowColor = option.colorShadow && option.colorShadow.value;*/
 
            /* var gr = ctx.createRadialGradient(60,60,15,75,75,75);
 
@@ -97,11 +96,13 @@ angular.module('myApp.view1', ['ngRoute'])
             gr.addColorStop(1.0,option.colorGr.value);
 
             ctx.fillStyle = gr;*/
-
+            console.log('options');
+            console.log(elem);
             ctx.beginPath();
-            console.log(balls.x, balls.y);
+
             ctx.arc(balls.x + option.size.value / 2 , balls.y, option.size.value / 2, 0, Math.PI * 2, false);
-            balls.x = option.size.value + 10;
+
+            balls.x = Number(option.size.value) + 10;
             ctx.closePath();
 
             ctx.fillStyle = option.color.value;
@@ -110,14 +111,23 @@ angular.module('myApp.view1', ['ngRoute'])
     };
 })
 
-.controller('propertiesCtrl', ['$scope', '$rootScope', 'codeService', function($scope, $rootScope, codeService) {
+.directive('addcanvas', function($compile) {
+    return function(scope, element, attrs) {
+        element.bind('click', function() {
+            console.log('addCa');
+            scope.count++;
+            angular.element(document.querySelector('canvas:last-of-type')).after($compile('<div class="draw-block"><canvas width="200px" height="200px"ng-controller="drawCtrl as drawCtrl"></canvas><div ng-controller="btnsCtrl as btnsCtrl">'
+                + '<button idialog="view1/addProperty.html">Добавить свойство</button>' +
+            + '<button idialog="view1/addMethod.html">Добавить метод</button>' +
+            + '<button  ng-click="btnsCtrl.createInstance()">Создать экземпляр</button> <inpit type="text" ng-model="scope.parent"/></div></div>')(scope));
+        });
+    };
+})
+
+.controller('propertiesCtrl', ['$scope', '$rootScope', 'codeService', 'defaultData', function($scope, $rootScope, codeService, defaultData) {
     $scope.props = codeService.objProperties;
 
 
-    $scope.toggle =  function(id){
-        //это не надо )))
-      // console.log( $scope.props[id].check);
-    };
     $scope.objProperty = codeService.objProperties;
     this.saveProperties = function(){
         var selectedProps = [];
@@ -129,7 +139,7 @@ angular.module('myApp.view1', ['ngRoute'])
             }
         }
        // console.log(selectedProps);
-        codeService.Ball = selectedProps;
+        defaultData.Ball = selectedProps;
        // codeService.addProperties(selectedProps);
         $rootScope.properties = selectedProps;
 
@@ -137,9 +147,9 @@ angular.module('myApp.view1', ['ngRoute'])
 
 }])
 
-.controller('methodsCtrl', ['$scope', '$rootScope', 'codeService', function($scope, $rootScope, codeService) {
+.controller('methodsCtrl', ['$scope', '$rootScope', 'codeService', 'defaultData', function($scope, $rootScope, codeService, defaultData) {
     this.saveMethods = function(selectedMethods){
-        codeService.Ball = selectedMethods;
+        defaultData.Ball = selectedMethods;
 
         $rootScope.changes = true;
     };
@@ -147,15 +157,15 @@ angular.module('myApp.view1', ['ngRoute'])
 }])
 
 
-.controller('drawCtrl', ['$scope', '$rootScope', '$element', 'codeService', 'draw', function($scope,  $rootScope, $element, codeService, draw){
+.controller('drawCtrl', ['$scope', '$rootScope', '$element', 'codeService', 'draw', 'defaultData', function($scope,  $rootScope, $element, codeService, draw, defaultData){
     //тут проверяем существование того или иного метода и добавляем фукнционал. Проверяем свойства, перерисовываем шар.
     //нужно получить список свойсвт
     var redrawing = true;
     $rootScope.$watch(
         'properties',
         function handleFooChange() {
-
-            draw.drawBall($element, codeService.Ball, redrawing);
+            console.log('defaultData.Ball', defaultData.Ball);
+            draw.drawBall($element, defaultData.Ball, redrawing);
         }
     );
 
@@ -164,7 +174,8 @@ angular.module('myApp.view1', ['ngRoute'])
         function handleFooChange() {
         console.log(7889);
             if ($rootScope.newInstance){
-                draw.drawBall($element, codeService.createObj(codeService.Ball));
+
+                draw.drawBall($element, codeService.createObj(defaultData.Ball));
             }
 
         }
