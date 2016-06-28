@@ -37,6 +37,7 @@ angular.module('myApp.view1', ['ngRoute'])
     function createObj (parent) {
      /*   console.log('Ball=', Ball);*/
         var newObj =  Object.create(defaultData.Ball);
+        console.log('newObj=',newObj);
         //сюда передавать свойства
        // newObj.color.value = 'blue';
         return newObj;
@@ -111,28 +112,70 @@ angular.module('myApp.view1', ['ngRoute'])
     };
 })
 
-.directive('addcanvas', function($compile) {
+
+.controller('mainCtrl', ['codeService', '$scope', function(codeService, $scope){
+    $scope.count = 0;
+    $scope.ObjsArray = [];
+    $scope.ObjsArray.push(codeService.objProperties);
+
+
+}])
+
+.directive('addcanvas', function($compile, $rootScope) {
+    console.log('addcanvas');
     return function(scope, element, attrs) {
+
         element.bind('click', function() {
-            console.log('addCa');
             scope.count++;
-            angular.element(document.querySelector('canvas:last-of-type')).after($compile('<div class="draw-block"><canvas width="200px" height="200px"ng-controller="drawCtrl as drawCtrl"></canvas><div ng-controller="btnsCtrl as btnsCtrl">'
-                + '<button idialog="view1/addProperty.html">Добавить свойство</button>' +
-            + '<button idialog="view1/addMethod.html">Добавить метод</button>' +
-            + '<button  ng-click="btnsCtrl.createInstance()">Создать экземпляр</button> <inpit type="text" ng-model="scope.parent"/></div></div>')(scope));
+            angular.element(document.querySelector('canvas:last-of-type')).after($compile('<div class="draw-block" data-id="draw-block-'+scope.count+'" ng-controller="btnsCtrl as btnsCtrl" ><canvas  id="canvas'+scope.count+'" width="200px" height="200px" ng-controller="drawCtrl as drawCtrl"></canvas>' +
+            '<button ng-click="btnsCtrl.addProperty()" idialog="view1/addProperty.html">Добавить свойство</button>' +
+            '<button idialog="view1/addMethod.html">Добавить метод</button>' +
+            '<button  addcanvas>Создать экземпляр</button> <inpit type="text" ng-model="scope.parent"/></div>')(scope));
+             $rootScope.newInstance =  'canvas' + scope.count;
+
+            //draw.drawBall($element, codeService.createObj(defaultData.Ball));
         });
+
+
     };
+
+
 })
+
+.directive('saveprops', ['$rootScope', '$scope', '$compile', 'defaultData', function($rootScope, $scope, $compile, defaultData ) {
+    return function(scope, element, attrs) {
+
+        element.bind('click', function() {
+            var selectedProps = [];
+            //получить связь с канвасом
+            //взять все элементы чье check =  true
+            var id = element.parent.id;
+
+            for (var prop in $scope.props){
+                if ($scope.props[prop].check){
+                    selectedProps[prop] = $scope.props[prop];
+                }
+            }
+            // console.log(selectedProps);
+            defaultData.Ball = selectedProps;
+            // codeService.addProperties(selectedProps);
+            $rootScope.properties = selectedProps;
+
+        });
+
+
+    };
+
+
+}])
 
 .controller('propertiesCtrl', ['$scope', '$rootScope', 'codeService', 'defaultData', function($scope, $rootScope, codeService, defaultData) {
     $scope.props = codeService.objProperties;
 
-
     $scope.objProperty = codeService.objProperties;
-    this.saveProperties = function(){
+    this.saveProperties = function() {
         var selectedProps = [];
-
-        //взять все элементы чье check =  true
+        //получить связь с канвасом
         for (var prop in $scope.props){
             if ($scope.props[prop].check){
                 selectedProps[prop] = $scope.props[prop];
@@ -157,14 +200,13 @@ angular.module('myApp.view1', ['ngRoute'])
 }])
 
 
-.controller('drawCtrl', ['$scope', '$rootScope', '$element', 'codeService', 'draw', 'defaultData', function($scope,  $rootScope, $element, codeService, draw, defaultData){
+.controller('drawCtrl', ['$scope', '$rootScope', '$element', 'codeService', 'draw', 'defaultData', '$attrs', function($scope,  $rootScope, $element, codeService, draw, defaultData,  $attrs){
     //тут проверяем существование того или иного метода и добавляем фукнционал. Проверяем свойства, перерисовываем шар.
     //нужно получить список свойсвт
     var redrawing = true;
     $rootScope.$watch(
         'properties',
         function handleFooChange() {
-            console.log('defaultData.Ball', defaultData.Ball);
             draw.drawBall($element, defaultData.Ball, redrawing);
         }
     );
@@ -172,10 +214,16 @@ angular.module('myApp.view1', ['ngRoute'])
     $rootScope.$watch(
         'newInstance',
         function handleFooChange() {
-        console.log(7889);
-            if ($rootScope.newInstance){
+        console.log('in watch');
+            console.log('id=',$attrs.id, '$rootScope.newInstance', $rootScope.newInstance );
 
-                draw.drawBall($element, codeService.createObj(defaultData.Ball));
+            if ($rootScope.newInstance){
+                if ($attrs.id == $rootScope.newInstance){
+                    draw.drawBall($element, codeService.createObj(defaultData.Ball));
+                    $scope.ObjsArray.push(codeService.createObj(defaultData.Ball));
+                    console.log('$scope.ObjsArray', $scope.ObjsArray);
+                }
+
             }
 
         }
@@ -183,16 +231,14 @@ angular.module('myApp.view1', ['ngRoute'])
 
 }])
 
-.controller('btnsCtrl', [ '$scope', '$rootScope', 'codeService', function($scope, $rootScope, codeService){
-    this.createInstance = function(){
-        console.log('In btns');
-        //var childBall = codeService.createObj($scope.parentObj);
-        $rootScope.newInstance =  codeService.createObj($scope.parentObj);
-
-
-        //нужно как-то дать знать контроллеру рисовалке
-        //отправляем в функция
-
+.controller('btnsCtrl', [ '$scope', '$rootScope', 'codeService', '$element','$attrs', function($scope, $rootScope, codeService, $element, $attrs) {
+    this.addProperty = function(){
+        var id = $attrs.id;
+       // console.log($attrs);
+        id = id.replace(/\D/g, '');
+        console.log(id);
+        codeService.objProperties = $scope.ObjsArray[id];  //получить свойства конкретного объекта
+        console.log($scope.ObjsArray);
     };
 }]);
 
